@@ -64,47 +64,53 @@ export default function Dashboard() {
         <p>Log a reading or review what you've tracked so far.</p>
       </div>
 
-      <ReadingForm
-        key={editing ? editing.id : 'new'}
-        initial={editing ? { date: editing.date, slot: editing.slot, value: editing.value } : null}
-        onSubmit={handleSubmit}
-        onCancel={() => setEditing(null)}
-        error={error}
-      />
-
-      <div className="card">
-        <h3>Your readings</h3>
-        {loading ? (
-          <Spinner label="Loading readings…" />
-        ) : (
-          <ReadingList
-            readings={readings}
-            onEdit={(r) => setEditing(r)}
-            onDelete={handleDelete}
+      <div className="dashboard-grid">
+        <div className="dashboard-main">
+          <ReadingForm
+            key={editing ? editing.id : 'new'}
+            initial={editing ? { date: editing.date, slot: editing.slot, value: editing.value } : null}
+            onSubmit={handleSubmit}
+            onCancel={() => setEditing(null)}
+            error={error}
           />
-        )}
-        {!loading && pagination.totalPages > 1 && (
-          <div className="pager">
-            <button className="secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-              <ChevronLeft size={16} />
-              Previous
-            </button>
-            <span>
-              Page {pagination.page} of {pagination.totalPages}
-            </span>
-            <button
-              className="secondary"
-              disabled={page >= pagination.totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Next
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        )}
-      </div>
 
-      <ShareWithDoctor />
+          <div className="card">
+            <h3>Your readings</h3>
+            {loading ? (
+              <Spinner label="Loading readings…" />
+            ) : (
+              <ReadingList
+                readings={readings}
+                onEdit={(r) => setEditing(r)}
+                onDelete={handleDelete}
+              />
+            )}
+            {!loading && pagination.totalPages > 1 && (
+              <div className="pager">
+                <button className="secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+                  <ChevronLeft size={16} />
+                  Previous
+                </button>
+                <span>
+                  Page {pagination.page} of {pagination.totalPages}
+                </span>
+                <button
+                  className="secondary"
+                  disabled={page >= pagination.totalPages}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Next
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="dashboard-aside">
+          <ShareWithDoctor />
+        </div>
+      </div>
     </div>
   );
 }
