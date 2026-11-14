@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import client from '../api/client';
 import ReadingForm from '../components/ReadingForm';
 import ReadingList from '../components/ReadingList';
+import { useAuth } from '../context/AuthContext';
 
 const LIMIT = 10;
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [readings, setReadings] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [page, setPage] = useState(1);
@@ -44,8 +47,15 @@ export default function Dashboard() {
     await load();
   }
 
+  const firstName = user.name.split(' ')[0];
+
   return (
-    <div className="page">
+    <div>
+      <div className="page-header">
+        <h1>Hi, {firstName}</h1>
+        <p>Log a reading or review what you've tracked so far.</p>
+      </div>
+
       <ReadingForm
         key={editing ? editing.id : 'new'}
         initial={editing ? { date: editing.date, slot: editing.slot, value: editing.value } : null}
@@ -63,14 +73,20 @@ export default function Dashboard() {
         />
         {pagination.totalPages > 1 && (
           <div className="pager">
-            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+            <button className="secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+              <ChevronLeft size={16} />
               Previous
             </button>
             <span>
               Page {pagination.page} of {pagination.totalPages}
             </span>
-            <button disabled={page >= pagination.totalPages} onClick={() => setPage((p) => p + 1)}>
+            <button
+              className="secondary"
+              disabled={page >= pagination.totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
               Next
+              <ChevronRight size={16} />
             </button>
           </div>
         )}

@@ -1,4 +1,7 @@
-import { SLOT_LABELS } from '../constants';
+import { Sunrise, Coffee, UtensilsCrossed, Moon, Pencil, Trash2 } from 'lucide-react';
+import { SLOT_META, glucoseStatus, formatDisplayDate } from '../constants';
+
+const ICONS = { Sunrise, Coffee, UtensilsCrossed, Moon };
 
 export default function ReadingList({ readings, onEdit, onDelete }) {
   if (readings.length === 0) {
@@ -6,32 +9,35 @@ export default function ReadingList({ readings, onEdit, onDelete }) {
   }
 
   return (
-    <table className="reading-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Slot</th>
-          <th>Value (mg/dl)</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {readings.map((r) => (
-          <tr key={r.id}>
-            <td>{r.date}</td>
-            <td>{SLOT_LABELS[r.slot]}</td>
-            <td>{r.value}</td>
-            <td className="row-actions">
-              <button className="link" onClick={() => onEdit(r)}>
-                Edit
+    <div>
+      {readings.map((r) => {
+        const meta = SLOT_META[r.slot];
+        const Icon = ICONS[meta.icon];
+        const status = glucoseStatus(r.value);
+        return (
+          <div className="reading-row" key={r.id}>
+            <span className="reading-icon">
+              <Icon strokeWidth={2} />
+            </span>
+            <div className="reading-info">
+              <div className="reading-slot">{meta.short}</div>
+              <div className="reading-date">{formatDisplayDate(r.date)}</div>
+            </div>
+            <span className={`value-chip status-${status}`}>
+              {r.value}
+              <span className="unit">mg/dl</span>
+            </span>
+            <div className="row-actions">
+              <button className="link" onClick={() => onEdit(r)} title="Edit">
+                <Pencil />
               </button>
-              <button className="link danger" onClick={() => onDelete(r)}>
-                Delete
+              <button className="link danger" onClick={() => onDelete(r)} title="Delete">
+                <Trash2 />
               </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }

@@ -88,6 +88,46 @@ error message, and it's cheap insurance if slots are ever extended.
   time budget alongside getting the required features solid. Doing either
   half-way seemed worse than leaving them out and writing this note.
 
+## UI redesign (via /design-director)
+
+The original frontend worked but used default-looking styling (plain cards,
+system font, generic green). Redesigned it with an actual visual identity
+instead:
+
+- **Palette**: deep forest/ink teal (`#163832`) as the brand/surface color,
+  warm terracotta (`#c1562c`) as the single accent/action color, and a warm
+  paper background (`#f6f1e8`) instead of stark white — deliberately not
+  blue/purple/pink, which the design brief calls out as the generic
+  AI-generated default.
+- **Typography**: Fraunces (serif, display) for headings, Inter for body
+  text, IBM Plex Mono for glucose values specifically — numbers in a
+  monospace face read as more "clinical/precise," which fits a health
+  tracker and creates a visual distinction between a reading's value and
+  surrounding text.
+- **Layout**: a sidebar app shell (collapses to a top bar under 860px)
+  instead of a plain top navbar; a split-screen login/register (brand copy
+  left, form right) instead of a centered card; a bento grid for the three
+  report cards instead of three identical stacked cards.
+- **Domain-driven color use**: reading values are shown as colored chips
+  based on a simple glucose band (`src/constants.js` → `glucoseStatus`:
+  <70 low, 70–139 normal, 140–199 elevated, ≥200 high) using the
+  success/warning/danger tokens. This is a coarse, **display-only**
+  heuristic to make the reading list scannable — it is not medical
+  guidance and doesn't distinguish fasting vs. post-meal targets the way a
+  clinician's reference range would.
+- **Icons**: `lucide-react`, one icon per time slot (sunrise/coffee/utensils/
+  moon) used consistently in the form, the reading list, and the daily
+  report — reinforces which slot is which without relying on color alone.
+- Added `lucide-react` as the only new dependency; no new UI framework.
+- **Not verified visually.** No browser/screenshot tool was available in
+  this session, so this was checked by: `npm run build` succeeding, a
+  classname audit (every `className` used in JSX, including template
+  literals, cross-checked against `styles.css`) to catch typos/dead
+  classes, and confirming the Vite dev server serves the page and entry
+  module without errors. **Please open the app in a browser and look at it
+  before considering the redesign done** — spacing/alignment issues that
+  only show up visually wouldn't be caught by any of the above.
+
 ## Known rough edges
 
 - Sequelize logs a Node deprecation warning for the `sqlite::memory:` URL
