@@ -3,6 +3,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import client from '../api/client';
 import ReadingForm from '../components/ReadingForm';
 import ReadingList from '../components/ReadingList';
+import ShareWithDoctor from '../components/ShareWithDoctor';
+import Spinner from '../components/Spinner';
 import { useAuth } from '../context/AuthContext';
 
 const LIMIT = 10;
@@ -14,11 +16,17 @@ export default function Dashboard() {
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   async function load(p = page) {
-    const res = await client.get(`/readings?page=${p}&limit=${LIMIT}`);
-    setReadings(res.data.data);
-    setPagination(res.data.pagination);
+    setLoading(true);
+    try {
+      const res = await client.get(`/readings?page=${p}&limit=${LIMIT}`);
+      setReadings(res.data.data);
+      setPagination(res.data.pagination);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -66,12 +74,16 @@ export default function Dashboard() {
 
       <div className="card">
         <h3>Your readings</h3>
-        <ReadingList
-          readings={readings}
-          onEdit={(r) => setEditing(r)}
-          onDelete={handleDelete}
-        />
-        {pagination.totalPages > 1 && (
+        {loading ? (
+          <Spinner label="Loading readings…" />
+        ) : (
+          <ReadingList
+            readings={readings}
+            onEdit={(r) => setEditing(r)}
+            onDelete={handleDelete}
+          />
+        )}
+        {!loading && pagination.totalPages > 1 && (
           <div className="pager">
             <button className="secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
               <ChevronLeft size={16} />
@@ -91,6 +103,8 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      <ShareWithDoctor />
     </div>
   );
 }

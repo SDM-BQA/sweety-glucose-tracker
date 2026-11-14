@@ -3,15 +3,20 @@ const jwt = require('jsonwebtoken');
 const { User } = require('../models');
 
 const SALT_ROUNDS = 10;
+const ROLES = ['patient', 'doctor'];
 
 function signToken(user) {
-  return jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
 }
 
+function publicUser(user) {
+  return { id: user.id, name: user.name, email: user.email, role: user.role };
+}
+
 async function register(req, res) {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
 
   if (!name || !String(name).trim()) {
     return res.status(400).json({ message: 'Please enter your name.' });
@@ -22,6 +27,9 @@ async function register(req, res) {
   if (!password || String(password).length < 6) {
     return res.status(400).json({ message: 'Password must be at least 6 characters.' });
   }
+  if (role !== undefined && !ROLES.includes(role)) {
+    return res.status(400).json({ message: 'Role must be either patient or doctor.' });
+  }
 
   const existing = await User.findOne({ where: { email: email.toLowerCase() } });
   if (existing) {
@@ -29,10 +37,15 @@ async function register(req, res) {
   }
 
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-  const user = await User.create({ name: name.trim(), email: email.toLowerCase(), passwordHash });
+  const user = await User.create({
+    name: name.trim(),
+    email: email.toLowerCase(),
+    passwordHash,
+    role: role || 'patient',
+  });
 
   const token = signToken(user);
-  res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email } });
+  res.status(201).json({ token, user: publicUser(user) });
 }
 
 async function login(req, res) {
@@ -53,7 +66,7 @@ async function login(req, res) {
   }
 
   const token = signToken(user);
-  res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+  res.json({ token, user: publicUser(user) });
 }
 
 module.exports = { register, login };

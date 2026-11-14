@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Sunrise, Coffee, UtensilsCrossed, Moon } from 'lucide-react';
 import client from '../api/client';
 import ReportCard from '../components/ReportCard';
+import Spinner from '../components/Spinner';
 import { todayDateOnly, SLOT_META } from '../constants';
 
 const ICONS = { Sunrise, Coffee, UtensilsCrossed, Moon };
@@ -27,34 +29,52 @@ function ChartTooltip({ active, payload, label }) {
 }
 
 export default function Reports() {
+  const { patientId } = useParams();
+  const { state } = useLocation();
+  const isDoctorView = Boolean(patientId);
+  const base = isDoctorView ? `/doctor/patients/${patientId}/reports` : '/reports';
+
   const [date, setDate] = useState(todayDateOnly());
   const [daily, setDaily] = useState(null);
   const [monthToDate, setMonthToDate] = useState(null);
   const [monthly, setMonthly] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   async function load() {
-    const [d, mtd, m] = await Promise.all([
-      client.get(`/reports/daily?date=${date}`),
-      client.get(`/reports/month-to-date?date=${date}`),
-      client.get(`/reports/monthly?date=${date}`),
-    ]);
-    setDaily(d.data);
-    setMonthToDate(mtd.data);
-    setMonthly(m.data);
+    setLoading(true);
+    try {
+      const [d, mtd, m] = await Promise.all([
+        client.get(`${base}/daily?date=${date}`),
+        client.get(`${base}/month-to-date?date=${date}`),
+        client.get(`${base}/monthly?date=${date}`),
+      ]);
+      setDaily(d.data);
+      setMonthToDate(mtd.data);
+      setMonthly(m.data);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date]);
+  }, [date, patientId]);
 
-  const chartData = monthly ? monthly.readings.map((r) => ({ date: r.date, value: r.value })) : [];
+  // "Readings over the month" is the current, still-filling-in month
+  // (month-to-date), not the already-finished previous month — that's a
+  // separate summary tile below.
+  const chartData = monthToDate ? monthToDate.readings.map((r) => ({ date: r.date, value: r.value })) : [];
 
   return (
     <div>
       <div className="page-header">
-        <h1>Reports</h1>
-        <p>Trends and summaries built from your logged readings.</p>
+        <h1>{isDoctorView ? `${state?.patientName || 'Patient'}'s reports` : 'Reports'}</h1>
+        <p>
+          {isDoctorView
+            ? "Trends and summaries built from this patient's logged readings."
+            : 'Trends and summaries built from your logged readings.'}
+        </p>
       </div>
 
       <div className="card report-filter">
@@ -64,7 +84,9 @@ export default function Reports() {
         </label>
       </div>
 
-      {daily && monthToDate && monthly && (
+      {loading && <Spinner label="Loading reports…" />}
+
+      {!loading && daily && monthToDate && monthly && (
         <div className="bento">
           <ReportCard title="Today's summary" range={daily.range} summary={daily.summary} variant="primary" />
           <ReportCard title="Month-to-date" range={monthToDate.range} summary={monthToDate.summary} />
@@ -95,7 +117,7 @@ export default function Reports() {
 
       {chartData.length > 0 && (
         <div className="card chart-card">
-          <h3>Previous month trend</h3>
+          <h3>Readings this month ({monthToDate.range.start} to {monthToDate.range.end})</h3>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={chartData} margin={{ left: -20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e4dcc9" />

@@ -79,14 +79,70 @@ error message, and it's cheap insurance if slots are ever extended.
 
 ## Bonus tasks
 
-- **Done:** pagination (`GET /readings?page=&limit=`, default limit 20, capped
-  at 100) and a Recharts line chart of the previous month's readings on the
-  Reports page.
-- **Not done:** Redis caching and the doctor role. Both are meaningful
-  features in their own right (cache invalidation on writes; a second
-  authorization model with patient-doctor assignment) and didn't fit the
-  time budget alongside getting the required features solid. Doing either
-  half-way seemed worse than leaving them out and writing this note.
+- **Done:** pagination (`GET /readings?page=&limit=`, default limit 20,
+  capped at 100), a Recharts line chart on the Reports page, and the
+  doctor role (see below).
+- **Not done:** Redis caching. Report values are cheap to recompute (a
+  couple of indexed date-range queries), so caching would add
+  invalidation-on-write complexity for a performance problem this app
+  doesn't actually have at this scale — not worth it without a Redis
+  instance already in the stack for another reason.
+- The chart was originally plotting the **previous** (fully elapsed)
+  month, because that's the dataset the existing "Previous month" report
+  tile already had on hand. Changed it to plot **month-to-date** instead —
+  "a line chart of readings over the month" reads more naturally as the
+  month that's actually in progress, and a previous-month chart next to a
+  previous-month summary tile was redundant with the existing bento grid.
+
+## Doctor role
+
+Implemented as: every user has a `role` (`patient` default, or `doctor`),
+and a patient has an optional `doctorId` pointing at one doctor account.
+Scope decisions:
+
+- **One doctor per patient, not many-to-many.** A real clinic has patients
+  seeing multiple providers, but the brief's bonus line is "a doctor
+  account that can view reports of patients assigned to them" — singular
+  "a doctor," and a join table for multi-doctor assignment is real added
+  complexity (migration-equivalent schema change, UI for managing several
+  assignments) for a relationship the spec doesn't ask for. `doctorId` on
+  `User` is the one-line version of the same idea.
+- **Patient self-assigns by entering the doctor's email**, rather than an
+  admin/doctor-initiated invite flow. There's no admin role and no email
+  sending in this app, so "doctor looks up and adds a patient by ID" would
+  either require the doctor to already know an internal patient ID (bad
+  UX) or an invite-code system (more infrastructure than the bonus
+  warrants). Self-assignment by email is one PUT request and mirrors how
+  "connect to my doctor" flows work in most real patient portals.
+- **Authorization is checked at the query, not just the route**: every
+  doctor-side report endpoint does
+  `User.findOne({ where: { id: patientId, doctorId: req.user.id } })`
+  before building a report — a doctor who isn't assigned to that patient
+  gets a 404 (not 403), so the endpoint doesn't leak whether a given
+  patient ID exists at all. Covered by tests (`doctor.test.js`): a
+  non-assigned doctor gets 404, a patient gets 403 on doctor-only routes.
+- **Report logic was extracted** from `reportController.js` into
+  `services/reportService.js` so the patient's own `/api/reports/*` and
+  the doctor's `/api/doctor/patients/:id/reports/*` share one
+  implementation instead of two copies that could drift.
+- **`alter: true` added to `sequelize.sync()`** in `server.js`. Plain
+  `sync()` only creates tables that don't exist yet — it won't add new
+  columns to a table that's already there, which the `role`/`doctorId`
+  columns needed on top of the `users` table already running against
+  Neon. `alter: true` is a reasonable dev-mode stand-in for a real
+  migration here, but it does mean sync can perform more invasive schema
+  diffing on every boot — fine for this project's scale, not something
+  I'd want unexamined in front of a large production table.
+- Frontend: doctors get a different nav ("Patients" instead of
+  "Readings"/"Reports") and land on a patient list instead of the
+  reading dashboard; `Reports.jsx` does double duty for both "my own
+  reports" and "a patient's reports as their doctor" via an optional
+  `:patientId` route param, rather than forking into two near-identical
+  components.
+- **Not done**: a doctor cannot un-invite/remove a patient from their own
+  side (only the patient can stop sharing, via "Stop sharing" on their
+  dashboard) — kept the relationship patient-owned since the patient is
+  the one with something at stake (privacy of their own health data).
 
 ## UI redesign (via /design-director)
 

@@ -27,9 +27,9 @@
   --danger-bg: #f8e9e5;
 
   /* Type */
-  --font-display: 'Fraunces', Georgia, serif;
+  --font-display: 'Space Grotesk', 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   --font-body: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  --font-mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
 
   --radius-sm: 6px;
   --radius: 10px;
@@ -526,6 +526,51 @@ button.link.danger {
 }
 
 /* ==========================================================================
+   Role toggle — patient / doctor picker on sign-up
+   ========================================================================== */
+.role-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+button.role-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 6px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+button.role-option.selected {
+  border-color: var(--clay);
+  background: #fdf1ea;
+  color: var(--clay-dark);
+}
+
+button.role-option:hover {
+  background: var(--surface-sunken);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+button.role-option.selected:hover {
+  background: #fbe4d7;
+  border-color: var(--clay);
+  color: var(--clay-dark);
+}
+
+/* ==========================================================================
    Reading form — segmented slot picker
    ========================================================================== */
 .slot-picker {
@@ -865,6 +910,38 @@ button.slot-option.selected {
 .chart-card .recharts-cartesian-axis-tick-value {
   font-family: var(--font-body);
   fill: var(--text-faint);
+}
+
+/* ==========================================================================
+   Loading spinner
+   ========================================================================== */
+.spinner-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.spinner-wrap-full {
+  min-height: 60vh;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2.5px solid var(--border-strong);
+  border-top-color: var(--clay);
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ==========================================================================

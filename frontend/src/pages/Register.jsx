@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Droplet, ArrowRight } from 'lucide-react';
+import { Droplet, ArrowRight, User, Stethoscope } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
@@ -9,6 +9,7 @@ export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('patient');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +18,7 @@ export default function Register() {
     setError('');
     setLoading(true);
     try {
-      await register(name, email, password);
+      await register(name, email, password, role);
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Something went wrong. Please try again.');
@@ -62,6 +63,27 @@ export default function Register() {
           <p className="auth-subtitle">Takes less than a minute.</p>
           {error && <p className="error">{error}</p>}
           <form onSubmit={handleSubmit}>
+            <label>
+              I am a
+              <div className="role-toggle">
+                <button
+                  type="button"
+                  className={`role-option ${role === 'patient' ? 'selected' : ''}`}
+                  onClick={() => setRole('patient')}
+                >
+                  <User size={16} strokeWidth={2} />
+                  Patient
+                </button>
+                <button
+                  type="button"
+                  className={`role-option ${role === 'doctor' ? 'selected' : ''}`}
+                  onClick={() => setRole('doctor')}
+                >
+                  <Stethoscope size={16} strokeWidth={2} />
+                  Doctor
+                </button>
+              </div>
+            </label>
             <label>
               Name
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />

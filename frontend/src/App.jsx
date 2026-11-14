@@ -1,11 +1,13 @@
 import { Routes, Route, Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Droplet, ListChecks, TrendingUp, LogOut } from 'lucide-react';
+import { Droplet, ListChecks, TrendingUp, Users, LogOut } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
+import Spinner from './components/Spinner';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Reports from './pages/Reports';
+import DoctorPatients from './pages/DoctorPatients';
 
 function BrandMark() {
   return (
@@ -34,10 +36,17 @@ function Shell({ children }) {
     navigate('/login');
   }
 
-  const links = [
-    { to: '/', label: 'Readings', icon: ListChecks },
-    { to: '/reports', label: 'Reports', icon: TrendingUp },
-  ];
+  const links =
+    user.role === 'doctor'
+      ? [{ to: '/', label: 'Patients', icon: Users }]
+      : [
+          { to: '/', label: 'Readings', icon: ListChecks },
+          { to: '/reports', label: 'Reports', icon: TrendingUp },
+        ];
+
+  function isActive(to) {
+    return to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
+  }
 
   return (
     <div className="shell">
@@ -48,11 +57,7 @@ function Shell({ children }) {
         </Link>
         <nav className="sidebar-nav">
           {links.map(({ to, label, icon: Icon }) => (
-            <Link
-              key={to}
-              to={to}
-              className={`sidebar-link ${location.pathname === to ? 'active' : ''}`}
-            >
+            <Link key={to} to={to} className={`sidebar-link ${isActive(to) ? 'active' : ''}`}>
               <Icon size={17} />
               {label}
             </Link>
@@ -76,7 +81,7 @@ function Shell({ children }) {
         </Link>
         <nav className="topbar-nav">
           {links.map(({ to, label }) => (
-            <Link key={to} to={to} className={location.pathname === to ? 'active' : ''}>
+            <Link key={to} to={to} className={isActive(to) ? 'active' : ''}>
               {label}
             </Link>
           ))}
@@ -91,9 +96,15 @@ function Shell({ children }) {
   );
 }
 
+function DoctorRoute({ children }) {
+  const { user } = useAuth();
+  if (user.role !== 'doctor') return <Navigate to="/" replace />;
+  return children;
+}
+
 export default function App() {
   const { ready, user } = useAuth();
-  if (!ready) return null;
+  if (!ready) return <Spinner fullPage label="Loading…" />;
 
   return (
     <Routes>
@@ -103,9 +114,7 @@ export default function App() {
         path="/"
         element={
           <PrivateRoute>
-            <Shell>
-              <Dashboard />
-            </Shell>
+            <Shell>{user?.role === 'doctor' ? <DoctorPatients /> : <Dashboard />}</Shell>
           </PrivateRoute>
         }
       />
@@ -116,6 +125,18 @@ export default function App() {
             <Shell>
               <Reports />
             </Shell>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/patients/:patientId/reports"
+        element={
+          <PrivateRoute>
+            <DoctorRoute>
+              <Shell>
+                <Reports />
+              </Shell>
+            </DoctorRoute>
           </PrivateRoute>
         }
       />

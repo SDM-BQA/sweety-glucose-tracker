@@ -5,7 +5,10 @@ const { sequelize } = require('./src/models');
 const PORT = process.env.PORT || 5000;
 
 async function start() {
-  await sequelize.sync();
+  // alter:true lets sync add new columns (e.g. role, doctorId) to tables
+  // that already exist from an earlier run, without a separate migration
+  // step. See AI_NOTES.md for the migration-free tradeoff this app makes.
+  await sequelize.sync({ alter: true });
   app.listen(PORT, () => console.log(`Sweety API listening on port ${PORT}`));
 }
 
