@@ -142,11 +142,6 @@ a {
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.sidebar-link:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: #fff;
-}
-
 .sidebar-link.active {
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
@@ -197,11 +192,6 @@ a {
   padding: 6px;
   display: flex;
   border-radius: var(--radius-sm);
-}
-
-.logout-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
 }
 
 .topbar {
@@ -344,10 +334,6 @@ button {
   transition: background 0.15s ease, transform 0.1s ease;
 }
 
-button:hover {
-  background: var(--clay-dark);
-}
-
 button:active {
   transform: translateY(1px);
 }
@@ -363,20 +349,11 @@ button.secondary {
   border: 1.5px solid var(--border-strong);
 }
 
-button.secondary:hover {
-  background: var(--surface-sunken);
-}
-
 button.link {
   background: none;
   color: var(--ink);
   padding: 4px 6px;
   font-weight: 500;
-}
-
-button.link:hover {
-  background: var(--surface-sunken);
-  transform: none;
 }
 
 button.link.danger {
@@ -549,7 +526,8 @@ button.link.danger {
   margin-top: 8px;
 }
 
-.slot-option {
+button.slot-option {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -564,22 +542,32 @@ button.link.danger {
   color: var(--text-muted);
   text-transform: none;
   letter-spacing: normal;
-  transition: all 0.15s ease;
 }
 
-.slot-option svg {
+button.slot-option svg {
   width: 18px;
   height: 18px;
 }
 
-.slot-option:hover {
-  border-color: var(--border-strong);
-}
-
-.slot-option.selected {
+button.slot-option.selected {
   border-color: var(--clay);
   background: #fdf1ea;
   color: var(--clay-dark);
+}
+
+.slot-check {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--clay);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--surface);
 }
 
 .value-input-wrap {
@@ -867,4 +855,44 @@ button.link.danger {
 .chart-card .recharts-cartesian-axis-tick-value {
   font-family: var(--font-body);
   fill: var(--text-faint);
+}
+
+/* ==========================================================================
+   Hover states. Each rule targets its own element with element+class
+   specificity (e.g. "button.slot-option:hover") so it can never be
+   shadowed by, or bleed into, a different button's hover rule.
+   ========================================================================== */
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+
+.logout-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+button:hover {
+  background: var(--clay-dark);
+}
+
+button.secondary:hover {
+  background: var(--surface-sunken);
+}
+
+button.link:hover {
+  background: var(--surface-sunken);
+  transform: none;
+}
+
+button.slot-option:hover {
+  background: var(--surface-sunken);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+button.slot-option.selected:hover {
+  background: #fbe4d7;
+  border-color: var(--clay);
+  color: var(--clay-dark);
 }

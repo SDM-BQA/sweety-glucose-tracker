@@ -128,6 +128,36 @@ instead:
   before considering the redesign done** — spacing/alignment issues that
   only show up visually wouldn't be caught by any of the above.
 
+## Slot-picker hover bug — two attempts
+
+The user reported the "Morning" pill showing a grey hover background while
+hovering "Lunch." First attempted fix: guessed it was "sticky hover" from a
+touch/trackpad pointer (no `mouseleave` event on touch) and gated every
+`:hover` rule behind `@media (hover: hover) and (pointer: fine)`. **This
+didn't fix it** — the user confirmed a real mouse (ruled out via hard
+refresh and an Incognito window, which also ruled out a browser extension),
+so a media feature query gated on "is this a real mouse" was never going
+to change anything for someone using a real mouse. Wrong diagnosis, wasted
+a round trip.
+
+The actual, mundane cause: `.slot-option` (class-only, specificity 0,1,0)
+and the global `button:hover` (element+pseudo-class, specificity 0,1,1)
+were competing, and `button:hover`'s specificity was higher, so **any**
+unselected pill's hover state fell through to the generic clay-colored
+button hover — not "Morning specifically," but whichever pill wasn't
+exactly matched by a more specific selector at that moment, which looked
+inconsistent/random across screenshots. Fixed properly by renaming every
+slot-picker rule to `button.slot-option` (element+class, 0,1,1) and
+`button.slot-option.selected`/`:hover` variants (0,2,1 / 0,2,2) — each
+state now has unambiguous, non-competing specificity against the base
+`button` rule and against each other, with no media-query gating involved.
+Also kept a small checkmark badge on the selected pill as a non-color
+signal, so "selected" can't be visually confused with "hovered" regardless.
+
+Lesson: should have re-read the actual cascade/specificity math the second
+time around before reaching for a device/input-type theory the data (real
+mouse, no extensions) already contradicted.
+
 ## Known rough edges
 
 - Sequelize logs a Node deprecation warning for the `sqlite::memory:` URL

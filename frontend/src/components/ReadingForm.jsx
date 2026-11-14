@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Sunrise, Coffee, UtensilsCrossed, Moon, Plus, Save, X } from 'lucide-react';
+import { Sunrise, Coffee, UtensilsCrossed, Moon, Plus, Save, X, Check } from 'lucide-react';
 import { SLOTS, todayDateOnly } from '../constants';
 
 const ICONS = { Sunrise, Coffee, UtensilsCrossed, Moon };
@@ -57,6 +57,11 @@ export default function ReadingForm({ initial, onSubmit, onCancel, error }) {
                 className={`slot-option ${form.slot === s.value ? 'selected' : ''}`}
                 onClick={() => setForm({ ...form, slot: s.value })}
               >
+                {form.slot === s.value && (
+                  <span className="slot-check">
+                    <Check size={11} strokeWidth={3} />
+                  </span>
+                )}
                 <Icon strokeWidth={2} />
                 {s.short}
               </button>
