@@ -158,6 +158,20 @@ Lesson: should have re-read the actual cascade/specificity math the second
 time around before reaching for a device/input-type theory the data (real
 mouse, no extensions) already contradicted.
 
+## Broken mobile layout — missing flex-direction on .shell
+
+On a narrow viewport the page showed a huge empty dark-green column on the
+left with the nav text floating partway down it, and the actual content
+squeezed into a sliver on the right. Cause: `.shell` is `display: flex`
+with no `flex-direction` set, so it defaults to `row`. The 860px breakpoint
+hides `.sidebar` and switches `.topbar` to `display: flex`, but nothing
+told `.shell` itself to stack vertically — so `.topbar` and `.content`
+became two side-by-side row items, with `.topbar` stretched to the page's
+full scrollable height (default `align-items: stretch`) and its nav
+content vertically centered inside that tall strip. Fixed with
+`.shell { flex-direction: column; }` inside the existing
+`@media (max-width: 860px)` block.
+
 ## Known rough edges
 
 - Sequelize logs a Node deprecation warning for the `sqlite::memory:` URL

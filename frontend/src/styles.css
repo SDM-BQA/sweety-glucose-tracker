@@ -54,6 +54,7 @@ body {
   background: var(--paper);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4 {
@@ -220,6 +221,13 @@ a {
 }
 
 @media (max-width: 860px) {
+  /* .shell has no flex-direction, so it defaults to row. With .sidebar
+     hidden below, .topbar and .content would otherwise sit side by side
+     as row items (and .topbar would stretch to the page's full height). */
+  .shell {
+    flex-direction: column;
+  }
+
   .sidebar {
     display: none;
   }
@@ -301,7 +309,7 @@ select {
   padding: 10px 12px;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
-  font-size: 0.98rem;
+  font-size: 1rem;
   font-family: var(--font-body);
   color: var(--text);
   background: var(--surface);
@@ -362,6 +370,7 @@ button.link.danger {
 
 .form-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 4px;
 }
@@ -688,9 +697,10 @@ button.slot-option.selected {
 
 .pager {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 12px 16px;
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
@@ -895,4 +905,65 @@ button.slot-option.selected:hover {
   background: #fbe4d7;
   border-color: var(--clay);
   color: var(--clay-dark);
+}
+
+/* ==========================================================================
+   Small phones — tighten spacing and reflow anything still built for a
+   4-wide / 3-wide layout, on top of the 860px tablet breakpoint above.
+   ========================================================================== */
+@media (max-width: 480px) {
+  .content {
+    padding: 20px 16px 48px;
+  }
+
+  .card {
+    padding: 18px;
+  }
+
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .topbar {
+    padding: 12px 16px;
+  }
+
+  .topbar-nav {
+    gap: 10px;
+  }
+
+  .topbar-nav a {
+    font-size: 0.82rem;
+  }
+
+  .brand-name {
+    font-size: 1.1rem;
+  }
+
+  /* Four pills no longer fit comfortably in one row at this width —
+     stack as 2x2 instead of squeezing labels like "Breakfast". */
+  .slot-picker {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .reading-row {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .reading-row .row-actions {
+    margin-left: auto;
+  }
+
+  .bento {
+    gap: 12px;
+  }
+
+  .report-tile {
+    padding: 18px;
+  }
+
+  .tile-main-stat .figure {
+    font-size: 1.9rem;
+  }
 }
